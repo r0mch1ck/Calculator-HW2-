@@ -4,6 +4,7 @@ import (
 	"deque/deq"
 	"deque/deqchar"
 	"fmt"
+	"math"
 )
 
 func isNumber(symbol uint8) bool {
@@ -16,7 +17,7 @@ func isNumber(symbol uint8) bool {
 
 func isOperator(symbol uint8) bool {
 	returnValue := false
-	if symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/' {
+	if symbol == '^' || symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/' {
 		returnValue = true
 	}
 	return returnValue
@@ -32,6 +33,8 @@ func operation(a int, b int, action uint8) int {
 		result = a * b
 	} else if action == '/' {
 		result = a / b
+	} else if action == '^' {
+		result = int(math.Pow(float64(a), float64(b)))
 	}
 	return result
 }
@@ -65,7 +68,7 @@ func stringToNum(symbol uint8) int {
 }
 
 func isRightValue(symbol uint8) bool {
-	if symbol == '(' || symbol == ')' || symbol == '1' || symbol == '2' || symbol == '3' || symbol == '4' || symbol == '5' || symbol == '6' || symbol == '7' || symbol == '8' || symbol == '9' || symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/' {
+	if symbol == '^' || symbol == '(' || symbol == ')' || symbol == '1' || symbol == '2' || symbol == '3' || symbol == '4' || symbol == '5' || symbol == '6' || symbol == '7' || symbol == '8' || symbol == '9' || symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/' {
 		return true
 	} else {
 		return false
@@ -89,13 +92,13 @@ func main() {
 	stackNumbers := deq.ZeroDeque()
 	stackOperations := deqchar.ZeroDequeChar()
 	operations := make(map[uint8]int)
-	operations[' '] = 0
 	operations['('] = 0
 	operations[')'] = 0
 	operations['+'] = 1
 	operations['-'] = 1
 	operations['*'] = 2
 	operations['/'] = 2
+	operations['^'] = 3
 	scanResult, ScanError = fmt.Scanf("%s", &inputValue)
 	if scanResult != 1 || ScanError != nil {
 		panic("Input Error")
