@@ -64,28 +64,18 @@ func stringToNum(symbol uint8) int {
 	return returnValue
 }
 
-func isRightValue(symbol uint8) bool {
-	if symbol == ' ' || symbol == '1' || symbol == '2' || symbol == '3' || symbol == '4' || symbol == '5' || symbol == '6' || symbol == '7' || symbol == '8' || symbol == '9' || symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/' {
-		return true
-	} else {
-		return false
-	}
-}
-
-func checker(stackOperations *deqchar.DequeChar, operations map[uint8]int, str uint8) bool {
+func checker(stackOperations *deqchar.DequeChar, operations map[uint8]int, str uint8) int {
 	if deqchar.IsDequeCharEmpty(stackOperations) {
-		return false
+		return 0
 	} else if operations[str] > operations[stackOperations.Tail.Value] {
-		return false
+		return 1
 	} else {
-		return true
+		return 2
 	}
 }
 
 func main() {
 	inputValue := ""
-	var scanResult int
-	var ScanError error
 	stackNumbers := deq.ZeroDeque()
 	stackOperations := deqchar.ZeroDequeChar()
 	operations := make(map[uint8]int)
@@ -96,53 +86,47 @@ func main() {
 	operations['-'] = 1
 	operations['*'] = 2
 	operations['/'] = 2
-	scanResult, ScanError = fmt.Scanf("%s", &inputValue)
-	if scanResult != 1 || ScanError != nil {
-		panic("Input Error")
-	}
+
+	fmt.Scanf("%s", &inputValue)
 	str := inputValue
 	for i := 0; i < len(str); i++ {
-		if isRightValue(str[i]) {
-			if isNumber(str[i]) {
-				stackNumbers.AppendRight(stringToNum(str[i]))
-				i++
-				if i < len(str) {
-					for i < len(str) && isNumber(str[i]) {
-						stackNumbers.Tail.Value = stackNumbers.Tail.Value*10 + stringToNum(str[i])
-						i++
-					}
-				}
-				if i >= len(str) {
-					break
+		if isNumber(str[i]) {
+			stackNumbers.AppendRight(stringToNum(str[i]))
+			i++
+			if i < len(str) {
+				for i < len(str) && isNumber(str[i]) {
+					stackNumbers.Tail.Value = stackNumbers.Tail.Value*10 + stringToNum(str[i])
+					i++
 				}
 			}
-			if str[i] == '(' {
-				stackOperations.AppendRight('(')
-			} else if isOperator(str[i]) {
-				if deqchar.IsDequeCharEmpty(stackOperations) {
-					stackOperations.AppendRight(str[i])
-				} else if operations[str[i]] > operations[stackOperations.Tail.Value] {
-					stackOperations.AppendRight(str[i])
-				} else {
-					for checker(stackOperations, operations, str[i]) {
-						tmp := stackNumbers.Tail.Value
-						stackNumbers.PopRight()
-						stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
-						stackOperations.PopRight()
-					}
-					stackOperations.AppendRight(str[i])
-				}
-			} else if str[i] == ')' {
-				for '(' != stackOperations.Tail.Value {
+			if i >= len(str) {
+				break
+			}
+		}
+		if str[i] == '(' {
+			stackOperations.AppendRight('(')
+		} else if isOperator(str[i]) {
+			if checker(stackOperations, operations, str[i]) == 0 {
+				stackOperations.AppendRight(str[i])
+			} else if checker(stackOperations, operations, str[i]) == 1 {
+				stackOperations.AppendRight(str[i])
+			} else {
+				for checker(stackOperations, operations, str[i]) == 2 {
 					tmp := stackNumbers.Tail.Value
 					stackNumbers.PopRight()
 					stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
 					stackOperations.PopRight()
 				}
+				stackOperations.AppendRight(str[i])
+			}
+		} else if str[i] == ')' {
+			for !(stackOperations.Tail.Value == '(') {
+				tmp := stackNumbers.Tail.Value
+				stackNumbers.PopRight()
+				stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
 				stackOperations.PopRight()
 			}
-		} else {
-			panic("You write wrong value!")
+			stackOperations.PopRight()
 		}
 	}
 	for !deqchar.IsDequeCharEmpty(stackOperations) {
