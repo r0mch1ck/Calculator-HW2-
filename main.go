@@ -133,7 +133,7 @@ func main() {
 					stackOperations.AppendRight(str[i])
 				}
 			} else if str[i] == ')' {
-				for !('(' == stackOperations.Tail.Value) {
+				for '(' != stackOperations.Tail.Value {
 					tmp := stackNumbers.Tail.Value
 					stackNumbers.PopRight()
 					stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
