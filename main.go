@@ -69,6 +69,7 @@ func main() {
 	stackNumbers := deq.ZeroDeque()
 	stackOperations := deqchar.ZeroDequeChar()
 	operations := make(map[uint8]int)
+	operations[' '] = 0
 	operations['('] = 0
 	operations[')'] = 0
 	operations['+'] = 1
@@ -89,7 +90,7 @@ func main() {
 		if str[i] == '(' {
 			stackOperations.AppendRight('(')
 		} else if isOperator(str[i]) {
-			if operations[str[i]] > operations[stackOperations.Tail.Value] {
+			if deqchar.IsDequeCharEmpty(stackOperations) || operations[str[i]] > operations[stackOperations.Tail.Value] {
 				stackOperations.AppendRight(str[i])
 			} else {
 				for !deqchar.IsDequeCharEmpty(stackOperations) || !(operations[str[i]] > operations[stackOperations.Tail.Value]) {
