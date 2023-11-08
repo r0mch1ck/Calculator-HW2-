@@ -13,7 +13,7 @@ type elemDequeChar struct {
 }
 
 func ZeroDequeChar() *DequeChar {
-	tmp := DequeChar{nil, nil, ' '}
+	tmp := DequeChar{nil, nil, 0}
 	return &tmp
 }
 
@@ -71,6 +71,8 @@ func (DequeChar *DequeChar) popLeft() {
 
 func (DequeChar *DequeChar) PopRight() {
 	DequeChar.Tail = DequeChar.Tail.leftElem
-	DequeChar.Tail.rightElem = nil
+	if DequeChar.Tail != nil {
+		DequeChar.Tail.rightElem = nil
+	}
 	DequeChar.length -= 1
 }

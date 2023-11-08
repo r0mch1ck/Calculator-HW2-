@@ -64,8 +64,18 @@ func stringToNum(symbol uint8) int {
 	return returnValue
 }
 
+func checker(stackOperations *deqchar.DequeChar, operations map[uint8]int, str uint8) bool {
+	if deqchar.IsDequeCharEmpty(stackOperations) {
+		return false
+	} else if operations[str] > operations[stackOperations.Tail.Value] {
+		return false
+	} else {
+		return true
+	}
+}
+
 func main() {
-	inputValue := "2+2"
+	inputValue := ""
 	stackNumbers := deq.ZeroDeque()
 	stackOperations := deqchar.ZeroDequeChar()
 	operations := make(map[uint8]int)
@@ -76,29 +86,37 @@ func main() {
 	operations['-'] = 1
 	operations['*'] = 2
 	operations['/'] = 2
-	//fmt.Scanf("%s", &inputValue)
+	fmt.Scanf("%s", &inputValue)
 	str := inputValue
 	for i := 0; i < len(str); i++ {
 		if isNumber(str[i]) {
 			stackNumbers.AppendRight(stringToNum(str[i]))
 			i++
-			for i < len(str) && isNumber(str[i]) {
-				stackNumbers.Tail.Value = stackNumbers.Tail.Value*10 + stringToNum(str[i])
-				i++
+			if i < len(str) {
+				for i < len(str) && isNumber(str[i]) {
+					stackNumbers.Tail.Value = stackNumbers.Tail.Value*10 + stringToNum(str[i])
+					i++
+				}
+			}
+			if i >= len(str) {
+				break
 			}
 		}
 		if str[i] == '(' {
 			stackOperations.AppendRight('(')
 		} else if isOperator(str[i]) {
-			if deqchar.IsDequeCharEmpty(stackOperations) || operations[str[i]] > operations[stackOperations.Tail.Value] {
+			if deqchar.IsDequeCharEmpty(stackOperations) {
+				stackOperations.AppendRight(str[i])
+			} else if operations[str[i]] > operations[stackOperations.Tail.Value] {
 				stackOperations.AppendRight(str[i])
 			} else {
-				for !deqchar.IsDequeCharEmpty(stackOperations) || !(operations[str[i]] > operations[stackOperations.Tail.Value]) {
+				for checker(stackOperations, operations, str[i]) {
 					tmp := stackNumbers.Tail.Value
 					stackNumbers.PopRight()
 					stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
 					stackOperations.PopRight()
 				}
+				stackOperations.AppendRight(str[i])
 			}
 		} else if str[i] == ')' {
 			for !('(' == stackOperations.Tail.Value) {
@@ -110,13 +128,11 @@ func main() {
 			stackOperations.PopRight()
 		}
 	}
-	if deq.IsDequeEmpty(stackNumbers) && deqchar.IsDequeCharEmpty(stackOperations) {
-		for !deq.IsDequeEmpty(stackNumbers) {
-			tmp := stackNumbers.Tail.Value
-			stackNumbers.PopRight()
-			stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
-			stackOperations.PopRight()
-		}
+	for !deqchar.IsDequeCharEmpty(stackOperations) {
+		tmp := stackNumbers.Tail.Value
+		stackNumbers.PopRight()
+		stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
+		stackOperations.PopRight()
 	}
 	fmt.Print(stackNumbers.Tail.Value)
 }

@@ -1,6 +1,6 @@
 package deq
 
-type deque struct {
+type Deque struct {
 	head   *elemDeque
 	Tail   *elemDeque
 	length int
@@ -12,16 +12,16 @@ type elemDeque struct {
 	Value     int
 }
 
-func ZeroDeque() *deque {
-	tmp := deque{nil, nil, 0}
+func ZeroDeque() *Deque {
+	tmp := Deque{nil, nil, 0}
 	return &tmp
 }
 
-func IsDequeEmpty(deque *deque) bool {
+func IsDequeEmpty(deque *Deque) bool {
 	return deque.length == 0
 }
 
-func ValueOfElemDeque(deque *deque, numOfElem int) *elemDeque {
+func ValueOfElemDeque(deque *Deque, numOfElem int) *elemDeque {
 	if numOfElem == 0 {
 		return deque.head
 	} else if numOfElem >= deque.length {
@@ -35,7 +35,7 @@ func ValueOfElemDeque(deque *deque, numOfElem int) *elemDeque {
 	}
 }
 
-func (deque *deque) appendLeft(value int) {
+func (deque *Deque) appendLeft(value int) {
 	if IsDequeEmpty(deque) {
 		tmpElem := elemDeque{nil, nil, value}
 		deque.head = &tmpElem
@@ -49,7 +49,7 @@ func (deque *deque) appendLeft(value int) {
 	}
 }
 
-func (deque *deque) AppendRight(value int) {
+func (deque *Deque) AppendRight(value int) {
 	if IsDequeEmpty(deque) {
 		tmpElem := elemDeque{nil, nil, value}
 		deque.head = &tmpElem
@@ -63,13 +63,13 @@ func (deque *deque) AppendRight(value int) {
 	}
 }
 
-func (deque *deque) popLeft() {
+func (deque *Deque) popLeft() {
 	deque.head = deque.head.rightElem
 	deque.head.leftElem = nil
 	deque.length -= 1
 }
 
-func (deque *deque) PopRight() {
+func (deque *Deque) PopRight() {
 	deque.Tail = deque.Tail.leftElem
 	deque.Tail.rightElem = nil
 	deque.length -= 1
