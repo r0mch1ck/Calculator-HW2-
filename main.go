@@ -7,6 +7,39 @@ import (
 	"math"
 )
 
+func inputStr(str *string) (int, error) {
+	return fmt.Scanf("%s", str)
+}
+
+func inputValidation(scanResult int, ScanError error) {
+	if scanResult != 1 || ScanError != nil {
+		panic("Input Error")
+	}
+}
+
+func isRightValue(symbol uint8) bool {
+	if symbol == '^' ||
+		symbol == '(' ||
+		symbol == ')' ||
+		symbol == '1' ||
+		symbol == '2' ||
+		symbol == '3' ||
+		symbol == '4' ||
+		symbol == '5' ||
+		symbol == '6' ||
+		symbol == '7' ||
+		symbol == '8' ||
+		symbol == '9' ||
+		symbol == '+' ||
+		symbol == '-' ||
+		symbol == '*' ||
+		symbol == '/' {
+		return true
+	} else {
+		return false
+	}
+}
+
 func isNumber(symbol uint8) bool {
 	returnValue := false
 	if symbol == '0' || symbol == '1' || symbol == '2' || symbol == '3' || symbol == '4' || symbol == '5' || symbol == '6' || symbol == '7' || symbol == '8' || symbol == '9' {
@@ -21,6 +54,10 @@ func isOperator(symbol uint8) bool {
 		returnValue = true
 	}
 	return returnValue
+}
+
+func isBracket(symbol uint8) bool {
+	return (symbol == '(') || (symbol == ')')
 }
 
 func operation(a int, b int, action uint8) int {
@@ -67,26 +104,16 @@ func stringToNum(symbol uint8) int {
 	return returnValue
 }
 
-func isRightValue(symbol uint8) bool {
-	if symbol == '^' ||
-		symbol == '(' ||
-		symbol == ')' ||
-		symbol == '1' ||
-		symbol == '2' ||
-		symbol == '3' ||
-		symbol == '4' ||
-		symbol == '5' ||
-		symbol == '6' ||
-		symbol == '7' ||
-		symbol == '8' ||
-		symbol == '9' ||
-		symbol == '+' ||
-		symbol == '-' ||
-		symbol == '*' ||
-		symbol == '/' {
-		return true
-	} else {
-		return false
+func clearStack(stackNumbers *deq.Deque, stackOperations *deqchar.DequeChar) {
+	tmp := stackNumbers.Tail.Value
+	stackNumbers.PopRight()
+	stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
+	stackOperations.PopRight()
+}
+
+func finalClearStack(stackNumbers *deq.Deque, stackOperations *deqchar.DequeChar) {
+	for !deqchar.IsDequeCharEmpty(stackOperations) {
+		clearStack(stackNumbers, stackOperations)
 	}
 }
 
@@ -100,10 +127,59 @@ func checker(stackOperations *deqchar.DequeChar, operations map[uint8]int, str u
 	}
 }
 
+func workWithNum(stackNumbers *deq.Deque, i *int, str string) {
+	stackNumbers.AppendRight(stringToNum(str[*i]))
+	*i++
+	if *i < len(str) {
+		for *i < len(str) && isNumber(str[*i]) {
+			stackNumbers.Tail.Value = stackNumbers.Tail.Value*10 + stringToNum(str[*i])
+			*i++
+		}
+	}
+}
+
+func workWithBracket(str string, i *int, stackNumbers *deq.Deque, stackOperations *deqchar.DequeChar) {
+	if str[*i] == '(' {
+		stackOperations.AppendRight('(')
+	} else if str[*i] == ')' {
+		for '(' != stackOperations.Tail.Value {
+			clearStack(stackNumbers, stackOperations)
+		}
+		stackOperations.PopRight()
+	}
+}
+
+func workWithOperator(operations map[uint8]int, str string, i *int, stackNumbers *deq.Deque, stackOperations *deqchar.DequeChar) {
+	if deqchar.IsDequeCharEmpty(stackOperations) {
+		stackOperations.AppendRight(str[*i])
+	} else if operations[str[*i]] > operations[stackOperations.Tail.Value] {
+		stackOperations.AppendRight(str[*i])
+	} else {
+		for checker(stackOperations, operations, str[*i]) {
+			clearStack(stackNumbers, stackOperations)
+		}
+		stackOperations.AppendRight(str[*i])
+	}
+}
+
+func runStrTreatment(operations map[uint8]int, str string, stackNumbers *deq.Deque, stackOperations *deqchar.DequeChar, i *int) {
+	if isNumber(str[*i]) {
+		workWithNum(stackNumbers, i, str)
+		if *i >= len(str) {
+			return
+		}
+	}
+	if isBracket(str[*i]) {
+		workWithBracket(str, i, stackNumbers, stackOperations)
+	} else if isOperator(str[*i]) {
+		workWithOperator(operations, str, i, stackNumbers, stackOperations)
+	}
+}
+
 func main() {
-	inputValue := ""
 	var scanResult int
 	var ScanError error
+	var str string
 	stackNumbers := deq.ZeroDeque()
 	stackOperations := deqchar.ZeroDequeChar()
 	operations := make(map[uint8]int)
@@ -115,60 +191,15 @@ func main() {
 	operations['/'] = 2
 	operations['^'] = 3
 	print("You can use these operators: +, -, *, /, ^.\nDivision performed integer.\nEnter your expression:\n")
-	scanResult, ScanError = fmt.Scanf("%s", &inputValue)
-	if scanResult != 1 || ScanError != nil {
-		panic("Input Error")
-	}
-	str := inputValue
+	scanResult, ScanError = inputStr(&str)
+	inputValidation(scanResult, ScanError)
 	for i := 0; i < len(str); i++ {
 		if isRightValue(str[i]) {
-			if isNumber(str[i]) {
-				stackNumbers.AppendRight(stringToNum(str[i]))
-				i++
-				if i < len(str) {
-					for i < len(str) && isNumber(str[i]) {
-						stackNumbers.Tail.Value = stackNumbers.Tail.Value*10 + stringToNum(str[i])
-						i++
-					}
-				}
-				if i >= len(str) {
-					break
-				}
-			}
-			if str[i] == '(' {
-				stackOperations.AppendRight('(')
-			} else if isOperator(str[i]) {
-				if deqchar.IsDequeCharEmpty(stackOperations) {
-					stackOperations.AppendRight(str[i])
-				} else if operations[str[i]] > operations[stackOperations.Tail.Value] {
-					stackOperations.AppendRight(str[i])
-				} else {
-					for checker(stackOperations, operations, str[i]) {
-						tmp := stackNumbers.Tail.Value
-						stackNumbers.PopRight()
-						stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
-						stackOperations.PopRight()
-					}
-					stackOperations.AppendRight(str[i])
-				}
-			} else if str[i] == ')' {
-				for '(' != stackOperations.Tail.Value {
-					tmp := stackNumbers.Tail.Value
-					stackNumbers.PopRight()
-					stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
-					stackOperations.PopRight()
-				}
-				stackOperations.PopRight()
-			}
+			runStrTreatment(operations, str, stackNumbers, stackOperations, &i)
 		} else {
 			panic("You write wrong value!")
 		}
 	}
-	for !deqchar.IsDequeCharEmpty(stackOperations) {
-		tmp := stackNumbers.Tail.Value
-		stackNumbers.PopRight()
-		stackNumbers.Tail.Value = operation(stackNumbers.Tail.Value, tmp, stackOperations.Tail.Value)
-		stackOperations.PopRight()
-	}
+	finalClearStack(stackNumbers, stackOperations)
 	fmt.Print(stackNumbers.Tail.Value)
 }
