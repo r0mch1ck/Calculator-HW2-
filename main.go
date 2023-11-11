@@ -8,6 +8,7 @@ import (
 )
 
 func inputStr(str *string) (int, error) {
+	print("You can use these operators: +, -, *, /, ^.\nDivision performed integer.\nEnter your expression:\n")
 	return fmt.Scanf("%s", str)
 }
 
@@ -15,6 +16,18 @@ func inputValidation(scanResult int, ScanError error) {
 	if scanResult != 1 || ScanError != nil {
 		panic("Input Error")
 	}
+}
+
+func mapOperationMaker() map[uint8]int {
+	operations := make(map[uint8]int)
+	operations['('] = 0
+	operations[')'] = 0
+	operations['+'] = 1
+	operations['-'] = 1
+	operations['*'] = 2
+	operations['/'] = 2
+	operations['^'] = 3
+	return operations
 }
 
 func isRightValue(symbol uint8) bool {
@@ -182,15 +195,7 @@ func main() {
 	var str string
 	stackNumbers := deq.ZeroDeque()
 	stackOperations := deqchar.ZeroDequeChar()
-	operations := make(map[uint8]int)
-	operations['('] = 0
-	operations[')'] = 0
-	operations['+'] = 1
-	operations['-'] = 1
-	operations['*'] = 2
-	operations['/'] = 2
-	operations['^'] = 3
-	print("You can use these operators: +, -, *, /, ^.\nDivision performed integer.\nEnter your expression:\n")
+	operations := mapOperationMaker()
 	scanResult, ScanError = inputStr(&str)
 	inputValidation(scanResult, ScanError)
 	for i := 0; i < len(str); i++ {
